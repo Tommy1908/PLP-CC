@@ -1,6 +1,6 @@
 {-Considerar las siguientes definiciones de funciones:
 
-
+------------------------------------------------------
 - max2 (x, y)   | x >= y = x
                 | otherwise = y
 
@@ -9,18 +9,36 @@ Currificada:
 - max2 x y  | x >= y = x
             | otherwise = y
 
+------------------------------------------------------
+
 - normaVectorial (x, y) = sqrt (x^2 + y^2)
 
 Currificada:
 - normaVectorial :: Float -> Float -> Float
 - normaVectorial x y = sqrt (x^2 + y^2)
-            
 
+------------------------------------------------------
+
+- subtract :: float -> float -> float
 - subtract = flip (-)
 
+------------------------------------------------------
+
+- predecesor :: float -> float -> float
 - predecesor = subtract 1
+
+------------------------------------------------------
+
+- evaluarEnCero :: (float -> a) -> a
 - evaluarEnCero = \f -> f 0
+
+------------------------------------------------------
+
+- dosVeces ::  
 - dosVeces = \f -> f . f
+
+------------------------------------------------------
+
 - flipAll = map flip
 - flipRaro = flip flip
 
