@@ -1,13 +1,4 @@
---merge :: [a] -> Int -> Int -> Int -> [a]
---merge (x:xs) p q r = 
---    where nl = q - (p + 1) --Longitud de subarray izq
---          nr = r - q
---          l = subsec (x:xs) p q 
---          r = subsec (x:xs) (q+1) r
-
-subsec :: [a] -> Int -> Int -> [a]
-subsec [] _ _ = []
-subsec xs a b = take (b+1-a) (drop a xs)
+--Un ejercicio propuesto en clase
 
 merge :: (Ord a) => [a] -> [a] -> [a]
 merge [] [] = [] 

@@ -34,12 +34,13 @@ Currificada:
 
 ------------------------------------------------------
 
-- dosVeces ::  
+- dosVeces :: (a -> a) -> a -> a
 - dosVeces = \f -> f . f
 
 ------------------------------------------------------
 
 - flipAll = map flip
+
 - flipRaro = flip flip
 
 i. Cuál es el tipo de cada función? (Suponer que todos los números son de tipo Float).
