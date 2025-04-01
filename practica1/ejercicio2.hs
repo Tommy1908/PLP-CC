@@ -14,10 +14,4 @@ uncurry f (x,y) = f x y
 --iii. Se podría definir una función curryN, que tome una función de un número arbitrario de argumentos y devuelva su versión currificada?
 --Sugerencia: pensar cuál sería el tipo de la función.
 
-testMalo :: (Int,Int) -> Int
-testMalo (x,y) = x + y 
-
-testPeor :: (Int,Int,Int) -> Int
-testPeor (x,y,z) = x + y + z 
-
-curryN f x = \y -> curryN f x y 
+--No, no se puede porque es imposible tipar algo infinito.
