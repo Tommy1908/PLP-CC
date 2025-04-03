@@ -23,4 +23,4 @@ sacarUna e xs = recr (\x xs r -> if e==x then xs else x:r) [] xs
 --ordenada (de manera creciente), de manera que se preserva el ordenamiento
 
 insertarOrdenado :: Ord a => a -> [a] -> [a]
-insertarOrdenado n xs = recr(\x xs r -> if n > x && xs /= [] && n <= head xs then x:n:xs else x:r) [] xs 
+insertarOrdenado n = recr(\x xs r -> if n > x && xs /= [] then x:r else n:x:xs) [] 
