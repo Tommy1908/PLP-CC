@@ -1,0 +1,135 @@
+data Doc = Vacio | Texto String Doc | Linea Int Doc
+para todo n, m :: Int positivos y x :: Doc
+indentar n (indentar m x) = indentar (n+m) x
+
+Por inducción estructural sobre Doc x
+P(x) = para todo n,m::Int.((n>0 && m > 0) -> indentar n (indentar m x) = indentar (n+m) x)
+
+*Caso base: P(Vacio)
+QvQ para todo n,m::Int.((n>0 && m > 0) -> indentar n (indentar m Vacio) = indentar (n+m) Vacio)
+Sean n,m::Int
+Asumo que n>0 y m>0 ya que si no lo fueran la implicacion seria trivialmente verdadera
+QVQ indentar n (indentar m Vacio) = indentar (n+m) Vacio
+
+~Macros~ fVacio = Vacio, fTexto = (\str rec -> Texto str rec), fLinea = (\espacios rec -> Linea (espacios + (n+m)) rec) 
+indentar n (indentar m Vacio)
+{I0}= indentar n (foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + (n+m)) rec) Vacio)
+{F0} = indentar n (case Vacio of Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea documento), Linea i documento -> (\espacios rec -> Linea (espacios + (n+m)) rec) i (foldDoc fVacio fTexto fLinea documento))
+{Case_Vacio}= indentar n Vacio
+{Lema 1} = Vacio
+
+indentar (n+m) Vacio
+{Lema 1} = Vacio
+Que es lo que queria demostrar
+
+*Caso Inductivo (Texto): QvQ para todo s::String.para todo x:Doc.(P(x) -> P(Texto s x))
+Sean s::String, x::Doc
+QVQ P(x) -> P(Texto s x)
+Hi = P(x) = para todo n,m::Int.((n>0 && m > 0) -> indentar n (indentar m x) = indentar (n+m) x)
+
+QVQ P(Texto s x)
+P(Texto s x) = para todo n,m::Int.((n>0 && m > 0) -> indentar n (indentar m (Texto s x)) = indentar (n+m) (Texto s x))
+Sean n,m::Int,Asumo que n>0 y m>0 ya que si no lo fueran la implicacion seria trivialmente verdadera
+QVQ indentar n (indentar m (Texto s x)) = indentar (n+m) (Texto s x)
+
+~Macros~ fVacio = Vacio, fTexto = (\str rec -> Texto str rec), fLinea = (\espacios rec -> Linea (espacios + (n+m)) rec) 
+indentar (n+m) (Texto s x)
+{I0}= foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + (n+m)) rec) (Texto s x)
+{F0}= case (Texto s x) of  Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea documento), Linea i documento -> (\espacios rec -> Linea (espacios + (n+m)) rec) i (foldDoc fVacio fTexto fLinea documento)
+{Case_Texto}= (\str rec -> Texto str rec) s (foldDoc fVacio fTexto fLinea x)
+{Beta}= (\rec -> Texto s rec) (foldDoc fVacio fTexto fLinea x)
+{Beta}= Texto s (foldDoc fVacio fTexto fLinea x)
+{I0}= Texto s (indentar (n+m) x)
+{Lema2}=indentar (n+m) (Texto s x)
+
+~Macros~ fLinea' = (\espacios rec -> Linea (espacios + m) rec) 
+indentar n (indentar m (Texto s x))
+{I0}= indentar n (foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + m) rec) (Texto s x))
+{F0}= indentar n (case (Texto s x) of  Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea' documento), Linea i documento -> (\espacios rec -> Linea (espacios + m) rec) i (foldDoc fVacio fTexto fLinea' documento))
+{Case_Texto}= indentar n ((\str rec -> Texto str rec) s (foldDoc fVacio fTexto fLinea' x))
+{Beta}= indentar n((\rec -> Texto s rec) (foldDoc fVacio fTexto fLinea' x)) 
+{Beta}= indentar n (Texto s (foldDoc fVacio fTexto fLinea' x))
+{I0}= indentar n (Texto s (indentar m x))
+{Lema2}= Texto s (indentar n (indentar m x)) 
+{Hi}= Texto s (indentar (n+m) x) // Ya que vale para todo n,m en particular estos n y m que eran mayores a 0
+{Lema2}= indentar (n+m) (Texto s x)
+Que es lo que queria demostrar
+
+
+*Caso Inductivo (Linea): QvQ para todo i::Int.para todo x:Doc.(P(x) -> P(Linea i x))
+Sean i:Int, x:Doc
+QVQ P(x) -> P(Linea i x)
+Hi = P(x) = para todo n,m::Int.((n>0 && m > 0) -> indentar n (indentar m x) = indentar (n+m) x)
+
+QVQ P(Linea i x)
+P(Linea i x) = para todo n,m::Int.((n>0 && m > 0) -> indentar n (indentar m (Linea i x)) = indentar (n+m) (Linea i x))
+Sean n,m::Int,Asumo que n>0 y m>0 ya que si no lo fueran la implicacion seria trivialmente verdadera
+QvQ indentar n (indentar m (Linea i x)) = indentar (n+m) (Linea i x)
+
+~Macros~ fVacio = Vacio, fTexto = (\str rec -> Texto str rec), fLinea' = (\espacios rec -> Linea (espacios + m) rec) 
+indentar n (indentar m (Linea i x))
+{I0}= indentar n (foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + m) rec) (Linea i x))
+{F0}= indentar n (case (Linea i x) of  Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea' documento), Linea i documento -> (\espacios rec -> Linea (espacios + m) rec) i (foldDoc fVacio fTexto fLinea' documento))
+{Case_Linea}= indentar n ((\espacios rec -> Linea (espacios + m) rec) i (foldDoc fVacio fTexto fLinea' x))
+{Beta}= indentar n ((\rec -> Linea (i + m) rec) (foldDoc fVacio fTexto fLinea' x))
+{Beta}= indentar n (Linea (i + m) (foldDoc fVacio fTexto fLinea' x))
+{I0}= indentar n (Linea (i+m) (indentar m x))
+{Lema3}= Linea (n+(i+m)) (indentar n (indentar m x))
+{Hi}= Linea (n+(i+m)) (indentar (n+m) x) // Ya que vale para todo n,m en particular estos n y m que eran mayores a 0
+{Conmutatividad}= Linea (n+(m+i)) (indentar (n+m) x)
+{Asociatividad}= Linea ((n+m)+i) (indentar (n+m) x)
+{Lema3}= indentar (n+m) (Linea i x)
+Que es lo que queria demostrar
+
+Por lo tanto queda demostrado que para todo n, m :: Int positivos y x :: Doc, vale, indentar n (indentar m x) = indentar (n+m) x
+
+------------------------------------------------------------------------------
+
+Demostracion de lemas:
+{LEMA 1}
+indentar k Vacio = Vacio, para todo k::Int positivos
+QVQ para todo k::Int.(n>0 -> indentar k Vacio = Vacio)
+Sea k::Int/k>0 ya que sino la implicacion seria trivialmente verdadera
+QVQ indentar k Vacio = Vacio
+
+~Macros~ fVacio = Vacio, fTexto = (\str rec -> Texto str rec), fLinea = (\espacios rec -> Linea (espacios + k) rec) 
+indentar k Vacio
+{I0} = foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + k) rec) Vacio
+{F0} = case Vacio of  Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea' documento), Linea i documento -> (\espacios rec -> Linea (espacios + m) rec) i (foldDoc fVacio fTexto fLinea' documento)
+{Case_Vacio}= Vacio
+Que es lo que queria demostrar
+
+{LEMA 2}
+indentar k (Texto s d) = Texto s (indentar k d), para todo k :: Int positivo,s :: String y d :: Doc.
+QVQ para todo k::Int.para todo s::string. para todo d::doc.(k>0 -> indentar k (Texto s d) = Texto s (indentar k d))
+Sea s::String, d::Doc y k::Int/k>0 ya que sino la implicacion seria trivialmente verdadera
+QVQ indentar k (Texto s d) = Texto s (indentar k d)
+
+indentar k (Texto s d) = Texto s (indentar k d)
+~Macros~ fVacio = Vacio, fTexto = (\str rec -> Texto str rec), fLinea = (\espacios rec -> Linea (espacios + k) rec)
+indentar k (Texto s d)
+{I0}= foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + k) rec) (Texto s d)
+{F0}= case (Texto s d) of  Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea documento), Linea i documento -> (\espacios rec -> Linea (espacios + k) rec) i (foldDoc fVacio fTexto fLinea documento)
+{Case_Texto}= (\str rec -> Texto str rec) s (foldDoc fVacio fTexto fLinea d)
+{Beta}= (\rec -> Texto s rec) (foldDoc fVacio fTexto fLinea d)
+{Beta}= Texto s (foldDoc fVacio fTexto fLinea d)
+{I0}= Texto s (indentar k d)
+Que es lo que queria demostrar
+
+{LEMA 3}
+indentar m (Linea k d) = Linea (m+k) (indentar m d) para todo m, k :: Int positivos y d :: Doc.
+QVQ para todo d::Doc.para todo m,k::Int.(m>0 && k>0 -> indentar m (Linea k d) = Linea (m+k) (indentar m d))
+Sea d:Doc, m::Int y k::Int / m > 0 y k > 0 ya que sino la implicacion seria trivialmente verdadera
+QVQ indentar m (Linea k d) = Linea (m+k) (indentar m d)
+
+indentar m (Linea k d) = Linea (m+k) (indentar m d)
+~Macros~ fVacio = Vacio, fTexto = (\str rec -> Texto str rec), fLinea = (\espacios rec -> Linea (espacios + m) rec)
+indentar m (Linea k d)
+{I0}= foldDoc (Vacio) (\str rec -> Texto str rec) (\espacios rec -> Linea (espacios + m) rec) (Linea k d)
+{F0}= case (Linea k d) of  Vacio -> Vacio, Texto str documento -> (\str rec -> Texto str rec) str (foldDoc fVacio fTexto fLinea documento), Linea i documento -> (\espacios rec -> Linea (espacios + m) rec) i (foldDoc fVacio fTexto fLinea documento)
+{Case_Linea}= (\espacios rec -> Linea (espacios + m) rec) k (foldDoc fVacio fTexto fLinea d)
+{Beta}=(\rec -> Linea (k + m) rec) (foldDoc fVacio fTexto fLinea d)
+{Beta}= Linea (k + m) (foldDoc fVacio fTexto fLinea d)
+{Conmutatividad}= Linea (m + k) (foldDoc fVacio fTexto fLinea d) 
+{I0}= Linea (m + k) (indentar m d) 
+Que es lo que queria demostrar
