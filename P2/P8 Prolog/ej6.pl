@@ -6,9 +6,6 @@
 %?- aplanar([[1, [2, 3], [a]], [[[]]]], L).→ L=[1, 2, 3, a]
 %Nota: este predicado ya está definido en prolog con el nombre flatten.
 
-%aplanar([X], Ys) :- not(is_list(X)) , not(is_list(YS)) , Ys \= X. 
-%aplanar([X], Ys) :- is_list(X) , aplanar(X, Ys).
-
 aplanar([],[]).
 aplanar([X|XS], L) :- is_list(X), aplanar(X, R), aplanar(XS,RS) , append(R,RS,L).
 aplanar([X|XS], [X|LS]) :- not(is_list(X)), aplanar(XS,LS).
