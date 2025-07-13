@@ -14,10 +14,11 @@ sum' = foldr (+) 0
 
 elem' :: (Eq a) =>  a -> [a] -> Bool
 --elem' n xs = foldr (\x r -> if x==n then True else r) False xs
-elem' n = foldr (\x r -> if x==n then True else r) False
+elem' n = foldr (\x rec -> x == n || rec) False
 
 masmas :: [a] -> [a] -> [a]
-masmas xs ys = foldr (\x r -> x:r) ys xs
+--masmas xs ys = foldr (\x r -> x:r) ys xs
+masmas xs ys = foldr (:) ys xs
 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' p xs = foldr (\x r -> if p x then x:r else r) [] xs 
