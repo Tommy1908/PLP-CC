@@ -13,43 +13,11 @@ foldForm fProp fAnd fOr fNeg f = case f of
         rec = foldForm fProp fAnd fOr fNeg
 
 
---fnn = foldForm fProp fAnd fOr fNeg
---fnn :: Form -> Bool -> Form
---    where 
---        fProp = (\str bool   -> str)
---        fAnd  = (\rx ry bool -> if bool then And rx ry else Or rx ry)
---        fOr   = (\rx ry bool -> if bool then And rx ry else Or rx ry)
---        fNeg  = (\rx bool    -> rx )
 
 fnn :: Form -> Bool -> Form
-fnn form positive = foldForm fProp fAnd fOr fNeg form
-  where
-    fProp s = if positive then Prop s else Neg (Prop s)
-    
-    fAnd f1 f2 = if positive 
-                 then And f1 f2 
-                 else Or f1 f2
-    
-    fOr f1 f2 = if positive 
-                then Or f1 f2 
-                else And f1 f2
-    
-    fNeg f = f
-
-
-
-isProp :: Form -> Bool
-isProp (Prop _) = True
-isProp _        = False
-
-isAnd :: Form -> Bool
-isAnd (And _ _) = True
-isAnd _       = False
-
-isOr :: Form -> Bool
-isOr (Or _ _) = True
-isOr _      = False
-
-isNeg :: Form -> Bool
-isNeg (Neg _) = True
-isNeg _       = False
+fnn = foldForm fProp fAnd fOr fNeg
+    where 
+        fProp = (\str bool   -> if bool then Prop str else Neg(Prop str))
+        fAnd  = (\rx ry bool -> if bool then And (rx True) (ry True) else Or (rx False) (ry False))
+        fOr   = (\rx ry bool -> if bool then Or (rx True) (ry True) else And (rx False) (ry False))
+        fNeg  = (\rx bool    -> if bool then rx False else rx True)
