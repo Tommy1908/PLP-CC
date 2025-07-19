@@ -8,12 +8,15 @@ listasQueSuman n = [ x:xs | x <- [1..n], xs <- listasQueSuman (n-x)]
 --Pero en la comprensión, xs ← [[]] → te da xs = [] 
     --qcyo creele a chat gpt
 
-listasQueSuman2 :: Int -> [[Int]]
-listasQueSuman2 n
-  | n < 1     = []                -- Caso base: si n < 1, no hay listas válidas
-  | otherwise = listasQueSuman' n n
-  where
-    listasQueSuman' n maxVal
-      | n == 0    = [[]]          -- Caso base: suma 0 se logra con la lista vacía
-      | n < 0     = []            -- Caso base: suma negativa no es posible
-      | otherwise = concat [ [x:xs] | x <- [1..min n maxVal], xs <- listasQueSuman' (n - x) x ]
+
+
+
+--listasQueSuman2 :: Int -> [[Int]]
+--listasQueSuman2 n
+--  | n < 1     = []                -- Caso base: si n < 1, no hay listas válidas
+--  | otherwise = listasQueSuman' n n
+--  where
+--    listasQueSuman' n maxVal
+--      | n == 0    = [[]]          -- Caso base: suma 0 se logra con la lista vacía
+--      | n < 0     = []            -- Caso base: suma negativa no es posible
+--      | otherwise = concat [ [x:xs] | x <- [1..min n maxVal], xs <- listasQueSuman' (n - x) x ]
