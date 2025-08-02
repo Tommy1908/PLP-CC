@@ -30,5 +30,5 @@ sacarDuplicados([], []).
 sacarDuplicados([X|XS],[X|Y]) :- borrar(XS,X,XSS), sacarDuplicados(XSS,Y).
 
 %iv)
-permutacion([],[]).
-permutacion(XS,[Y|YS]):- append(Prefijo,[X],ZS), append(ZS,Sufijo, YS), permutacion(XS,YS). %mover ys
+%permutacion([],[]).
+%permutacion(XS,[Y|YS]):- append(Prefijo,[X],ZS), append(ZS,Sufijo, YS), permutacion(XS,YS). %mover ys
