@@ -1,0 +1,153 @@
+desde(X,X) :- nonvar(X).
+desde(X,Y) :- nonvar(Y), Y > X.
+desde(X,Y) :- var(Y), N is X+1, desde(N,Y).
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+a1(nil).
+a1(bin(nil, 5, nil)).
+a1(bin(bin(nil, 3, nil), 4, bin(bin(nil, 7, nil), 9, nil))).
+vacio(nil).
+
+raiz(bin(_,R,_), R).
+
+altura(nil,0).
+altura(bin(L,_,D),H):- altura(L,LR), altura(D,DR), M is max(LR,DR), H is M + 1.
+
+cantidadDeNodos(nil,0).
+cantidadDeNodos(bin(L,_,D),C):- cantidadDeNodos(L,LR), cantidadDeNodos(D,DR), C is 1 + LR + DR.
+%%%%%%%%%%%%%%%%%
+%i. inorder(+AB,-Lista), que tenga éxito si AB es un árbol binario y Lista la lista de sus nodos según el recorrido inorder.
+
+inorder(nil,[]).
+inorder(bin(L,R,D),ORD):- inorder(L,ORDL), inorder(D,ORDD), append(ORDL,[R|ORDD],ORD).
+
+%ii. arbolConInorder(+Lista,-AB), versión inversa del predicado anterior.
+
+arbolConInorder(ORD,AB):- inorder(AB,ORD).
+
+%iii. aBB(+T), que será verdadero si T es un árbol binario de búsqueda.
+%% aBB 1
+aBB1(T):- inorder(T,L), ordenada(L).
+
+ordenada([]).
+ordenada([_]).
+ordenada([X,Y|R]):- X =< Y, ordenada([Y|R]).
+
+%% aBB 2
+aBB2(nil).
+aBB2(bin(nil,R,nil)).
+aBB2(bin(nil,R,D)):- D \= nil, raiz(D,DR), DR >= R.
+aBB2(bin(L,R,nil)):- L \= nil, raiz(L,LR), R >= LR.
+aBB2(bin(L,R,D)):- D \= nil, raiz(D,DR), DR >= R, L \= nil, raiz(L,LR), R >= LR.
+
+raiz(bin(_,R,_),R).
+
+
+%iv. aBBInsertar(+X, +T1, -T2), donde T2 resulta de insertar X en orden en el árbol T1. Este predicado ¿es reversible en alguno de sus parámetros? Justificar.
+
+aBBInsertar(X,T1,T2):- inorder(T2,LS), member(X,LS), aBB2(T2).
+
+%%%%%%generacion
+desde(X, X).
+desde(X, Y) :- N is X+1, desde(N, Y).
+
+%generarPares(-X, -Y)
+generarPares(X,Y) :- desde(0, N), paresQueSuman(N, X, Y).
+
+%paresQueSuman(+N, -X, -Y)
+paresQueSuman(N, X, Y) :- between(0, N, X), Y is N-X.
+
+%coprimos(-X, -Y)
+coprimos(X, Y) :- generarPares(X,Y), X > 0, Y > 0, 1 =:= gcd(X,Y).
+
+%%%%%%%%%%%%%
+%Definir el predicado corteMásParejo(+L,-L1,-L2) que, dada una lista de números, realiza el corte más parejo posible con respecto a la suma de sus elementos (puede haber más de un resultado). Por ejemplo:
+%?- corteMásParejo([1,2,3,4,2],L1,L2). → L1 = [1, 2, 3], L2 = [4, 2] ; false.
+%?- corteMásParejo([1,2,1],L1,L2). → L1 = [1], L2 = [2, 1] ; L1 = [1, 2], L2 = [1] ; false.
+
+%+l
+corteMasParejo([],[],[]).
+corteMasParejo(L,L1,L2):- crearCorte(L,L1,L2,R), not(existeCorteMasParejo(L,L1,L2,R)). 
+
+%+[X|XS]
+suma([],0).
+suma([X|XS],R):- suma(XS,RS), R is X + RS.
+
+% +L,L1,L2,R
+existeCorteMasParejo(L,L1,L2,R):- crearCorte(L,OL1,OL2,R2), R2 < R.
+
+%+L
+crearCorte(L,L1,L2,R):-append(L1,L2,L), suma(L1,R1), suma(L2,R2), R is abs(R1-R2).
+
+%%%
+Un número poderoso es un número natural m tal que por cada número primo p que divide a m, p^2 también divide a m.
+%Definir el predicado próximoNumPoderoso(+X,-Y) que instancie en Y el siguiente número poderoso a partir de X.
+%   ?- próximoNumPoderoso(20,Y).
+%       Y = 25;
+%       false.
+%   ?- próximoNumPoderoso(8,Y).
+%       Y = 9;
+%       false.
+
+%+N
+esDivisor(N,D):- D \= 0, (N mod D) =:= 0.
+
+%+P
+esPrimo(P):- P > 1, P1 is P-1, not((between(2,P1,D), (P mod D) =:= 0)).
+
+%+N +I=1
+divisoresPrimos(N,I,[]):- I > N.
+divisoresPrimos(N,I,[I|XS]):- I =< N, esDivisor(N,I), esPrimo(I), I1 is I + 1, divisoresPrimos(N,I1,XS).
+divisoresPrimos(N,I,XS):- I =< N, not((esDivisor(N,I), esPrimo(I))), I1 is I + 1, divisoresPrimos(N,I1,XS).
+%Si no agregas el not, se rompe porque si no cumple es primo o es divisor no sabe que hacer
+
+pow(X,XX):- XX is X*X.
+
+proximoNumPoderoso(X,Y):- Z is X+1, divisoresPrimos(Z,1,Div), esPoderoso(Z,Div), Y=Z. 
+proximoNumPoderoso(X,Y):- Z is X+1, divisoresPrimos(Z,1,Div), not(esPoderoso(Z,Div)), proximoNumPoderoso(Z,Y). 
+
+esPoderoso(_,[]).
+esPoderoso(N,[X|XS]):- esDivisor(N,X), pow(X,XX), esDivisor(N,XX), esPoderoso(N,XS).
+%%%
+
+
+caminoSimple(G, D, D, [D]) :- esNodo(G, D).
+caminoSimple(G, D, H, Camino) :- D \== H, esNodo(G, D), esNodo(G, H), caminoSimpleAux(G, D, H, [D], Camino), length(Camino,L), L>1.
+
+% Predicado auxiliar con acumulador de visitados
+caminoSimpleAux(_, H, H, _, [H]).
+caminoSimpleAux(G, Actual, H, Visitados, [Actual|Camino]) :- Actual \== H, esArista(G, Actual, Siguiente), not(member(Siguiente, Visitados)), caminoSimpleAux(G, Siguiente, H, [Siguiente|Visitados], Camino).
+
+%ii. Un camino L en un grafo G es Hamiltoniano sii L es un camino simple que contiene a todos los nodos G.
+%Implementar el predicado caminoHamiltoniano(+G,?L) que dice si L es un camino Hamiltoniano en G.
+
+caminoHamiltoniano(G,L):- caminoSimple(G,_,_,L), not(algunoNoPertence(G,L)).
+
+algunoNoPertence(G,L):- esNodo(G,X), not(member(X,L)).
+%%%
+
+%Ejercicio 23 ⋆
+%Trabajaremos con árboles binarios, usando nil y bin(AI, V, AD) para representarlos en Prolog.
+%i. Implementar un predicado arbol(-A) que genere estructuras de árbol binario, dejando los valores de los nodos sin instanciar.
+%Deben devolverse todos los árboles posibles (es decir, para toda estructura posible, el predicado debe devolverla luego de un número finito de pedidos).
+%No debe devolverse dos veces el mismo árbol.
+    % ? arbol(A).
+    % A = nil ;
+    % A = bin(nil, _G2388, nil) ;
+    % A = bin(nil, _G2391, bin(nil, _G2398, nil)) ;
+    % A = bin(bin(nil, _G2398, nil), _G2391, nil) ;
+    % ...
+
+arbol(A) :- desde(0,N), arbol_con_altura(N, A).
+
+desde(X,X).
+desde(X,Y):- N is X+1, desde(N,Y).
+
+arbol_con_altura(0, nil).
+arbol_con_altura(N, bin(I, _, D)) :- N > 0, N1 is N - 1,
+    between(0, N1, AI),
+    between(0, N1, AD),
+    MaxAlt is max(AI, AD),
+    MaxAlt =:= N1,
+    arbol_con_altura(AI, I),
+    arbol_con_altura(AD, D).

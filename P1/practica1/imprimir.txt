@@ -1,0 +1,223 @@
+data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a)| Prod (Polinomio a) (Polinomio a)
+--Luego usar el esquema definido para escribir la función evaluar :: Num a => a -> Polinomio a -> a 
+--que, dado un número y un polinomio, devuelve el resultado de evaluar el polinomio dado en el número dado
+
+--No pide fold asi que hacemos pattern matchin para hacer mas facil el ej 12 de la guia 2
+
+evaluar :: Num a => a -> Polinomio a -> a
+evaluar n X          = n
+evaluar n (Cte v)    = v
+evaluar n (Suma a b) = (evaluar n a) + (evaluar n b)
+evaluar n (Prod a b) = (evaluar n a) * (evaluar n b)
+
+%%%%
+data AB a = Nil | Bin (AB a) a (AB a)
+
+--i. Usando recursión explícita, definir los esquemas de recursión estructural (foldAB) y primitiva (recAB), y dar sus tipos.
+foldAB :: b -> (b -> a -> b -> b) -> AB a -> b
+foldAB fNil fBin ab = case ab of
+    Nil         -> fNil
+    (Bin i r d) -> fBin (rec i) r (rec d)
+    where
+        rec = foldAB fNil fBin
+
+recAB :: b -> (AB a -> b-> a -> b -> b) -> AB a -> b
+recAB fNil fBin ab = case ab of
+    Nil         -> fNil
+    (Bin i r d) -> fBin ab (rec i) r (rec d)
+    where
+        rec = recAB fNil fBin
+
+--ii. Definir las funciones esNil, altura y cantNodos (para esNil puede utilizarse case en lugar de foldAB o recAB).
+
+esNil :: AB a -> Bool
+esNil ab = case ab of
+    Nil -> True
+    _   -> False
+
+altura :: AB a -> Int
+altura = foldAB 0 (\recI x recD -> 1 + (max recI recD))
+
+cantNodos :: AB a -> Int
+cantNodos = foldAB 0 (\recI x recD -> 1 + recI + recD)
+
+--iii. Definir la función mejorSegún :: (a -> a -> Bool) -> AB a -> a, análoga a la del ejercicio 3, para árboles.
+--Se recomienda definir una función auxiliar para comparar la raíz con un posible resultado de la recursión para un árbol que puede o no ser Nil.
+--Asumo que no hay arbol vacio
+
+mejorSegun :: (a -> a -> Bool) -> AB a -> a
+mejorSegun f (Bin i r d) = foldAB r (\recI x recD -> compararCon f (compararCon f x recI) recD) (Bin i r d)
+
+compararCon :: (a -> a -> Bool) -> a -> a -> a
+compararCon f r h = if f r h then r else h
+
+arbol= Bin (Bin Nil 3 Nil) 4 (Bin (Bin Nil 6 Nil) 8 Nil)
+mayorNodo a b = a>=b
+menorNodo a b = a<=b
+
+--iv. Definir la función esABB :: Ord a => AB a -> Bool que chequea si un árbol es un árbol binario de búsqueda.
+--Recordar que, en un árbol binario de búsqueda, el valor de un nodo es mayor o igual que los valores que aparecen en el subárbol izquierdo y es estrictamente menor que los valores que aparecen en el subárbol derecho.
+
+--Asume que no es Nil
+getRoot :: AB a -> a
+getRoot (Bin i r d) = r
+
+esABB :: Ord a => AB a -> Bool
+esABB = recAB True (\(Bin i r d) recI x recD -> if esNil i then True else (getRoot i) <= r && if esNil d then True else r < (getRoot d) && recI && recD)
+
+%%%%%%%
+
+data AB a = Nil | Bin (AB a) a (AB a) deriving Show
+
+foldAB :: b -> (b -> a -> b -> b) -> AB a -> b
+foldAB fNil fBin ab = case ab of
+    Nil         -> fNil
+    (Bin i r d) -> fBin (rec i) r (rec d)
+    where
+        rec = foldAB fNil fBin
+
+recAB :: b -> (AB a -> b-> a -> b -> b) -> AB a -> b
+recAB fNil fBin ab = case ab of
+    Nil         -> fNil
+    (Bin i r d) -> fBin ab (rec i) r (rec d)
+    where
+        rec = recAB fNil fBin
+
+--i. Definir las funciones ramas (caminos desde la raíz hasta las hojas), cantHojas y espejo.
+
+ramas :: AB a -> [[a]]
+ramas = recAB [] (\(Bin i _ d) recI r recD -> if esNil i && esNil d then [[r]] else (if esNil i then [] else map (r:) recI) ++ (if esNil d then [] else map (r:) recD))
+
+esNil :: AB a -> Bool
+esNil ab = case ab of
+    Nil -> True
+    _   -> False
+
+arbol = (Bin (Bin (Bin Nil 1 Nil) 2 (Bin Nil 3 Nil)) 4 (Bin (Bin Nil 5 Nil) 6 (Bin Nil 7 Nil)) )
+
+cantHojas :: AB a -> Int
+cantHojas = foldAB 0 (\recI r recD -> if recI == 0 && recD == 0 then 1 else recI + recD)
+
+espejo :: AB a -> AB a
+espejo = foldAB Nil (\recI r recD -> Bin recD r recI)
+
+--ii. Definir la función mismaEstructura :: AB a -> AB b -> Bool que, dados dos árboles, indica si éstos tienen la misma forma, independientemente del contenido de sus nodos.
+--Pista: usar evaluación parcial y recordar el ejercicio 7. Pista*: paso 1 cuatri entero, asi que no lo recuerdo
+
+mismaEstructura :: AB a -> AB b -> Bool
+mismaEstructura = foldAB (\ab2 -> esNil ab2) (\recI r recD ab2 -> not (esNil ab2) && recI (getI ab2) && recD (getD ab2)) 
+
+getI :: AB a -> AB a
+getI (Bin i _ _) = i 
+getD :: AB a -> AB a
+getD (Bin _ _ d) = d
+
+%%%%%%%
+--Se desea modelar en Haskell los árboles con información en las hojas (y sólo en ellas). Para esto introduciremos el siguiente tipo:
+data AIH a = Hoja a | Bin (AIH a) (AIH a)
+
+
+--a) Definir el esquema de recursión estructural foldAIH y dar su tipo.
+--Por tratarse del primer esquema de recursión que tenemos para este tipo, se permite usar recursión explícita.
+
+foldAIH :: (a -> b) -> (b -> b -> b) -> AIH a -> b
+foldAIH fHoja fBin ab = case ab of
+    (Hoja x)  -> fHoja x
+    (Bin i d) -> fBin (rec i) (rec d)
+    where
+        rec = foldAIH fHoja fBin
+
+--b) Escribir las funciones altura :: AIH a -> Integer y tamaño :: AIH a -> Integer.
+--Considerar que la altura de una hoja es 1 y el tamaño de un AIH es su cantidad de hojas.
+
+altura :: AIH a -> Integer
+altura = foldAIH (const 1) (\recI recD -> 1 + (max recI recD))
+--               (\x -> 1)
+--asumo que el nodo raiz que no tiene datos tambien suma
+
+tamaño :: AIH a -> Integer
+tamaño = foldAIH (const 1) (\recI recD -> recI + recD)
+%%%%%%%%%%%
+--i. Definir el tipo RoseTree de árboles no vacíos, con una cantidad indeterminada de hijos para cada nodo.
+data RoseTree a = Rose a [RoseTree a] deriving (Show, Eq)
+--ii. Escribir el esquema de recursión estructural para RoseTree. Importante escribir primero su tipo.
+foldRose :: (a -> [b] -> b) -> RoseTree a -> b  -- es [b] porque cada rosa hijo tiene que ser una recursion
+foldRose fRosa (Rose r rs) = fRosa r (map (foldRose fRosa) rs) 
+--Para hacer la recursion tenemos que llamar como antes a foldRose y la funcion pero como es una lista hay que usar un map para cada elemento de la lista 
+
+--iii. Usando el esquema definido, escribir las siguientes funciones:
+--a) hojas, que dado un RoseTree, devuelva una lista con sus hojas ordenadas de izquierda a derecha, según su aparición en el RoseTree.
+
+hojas :: RoseTree a -> [a]
+hojas = foldRose (\r recR -> if null recR then [r] else concat recR)
+--Null para ver si es vacio, porque aparentemente para que ande a tendria que ser eq creo
+
+--b) distancias, que dado un RoseTree, devuelva las distancias de su raíz a cada una de sus hojas.
+
+distancias :: RoseTree a -> [Int]
+distancias = foldRose (\r recR -> if null recR then [0] else map (+1) (concat recR))
+--Las hojas no tiene que sumar para que cuando sea el arbol solo hoja la distancia de la raiz a la hoja sea 0 y luego todo coordine
+
+--c) altura, que devuelve la altura de un RoseTree (la cantidad de nodos de la rama más larga). Si el RoseTree es una hoja, se considera que su altura es 1.
+
+altura :: RoseTree a -> Int
+altura = foldRose (\r recR -> if null recR then 1 else maximum(map (+1) recR))
+%%%%%%%%%%%%%%
+paresDeNat::[(Int,Int)]
+paresDeNat = [(x, y) | n <- [0..], x <- [0..n], let y = n - x ]  --n es la suma que va incrementando y X e Y tienen que dar esa suma
+--paresDeNat = [(x, y-x) | y <- [0..], x <- [0..y]]
+--paresDeNat = concatMap (\n -> [(x, n-x) | x <- [0..n]]) [0..]
+%%%%%%%%%%
+--Ejercicio 19
+--Una tripla pitagórica es una tripla (a, b, c) de enteros positivos tal que a^2 + b^2 = c^2.
+--La siguiente expresión intenta ser una definición de una lista (infinita) de triplas pitagóricas:
+pitagoricas :: [(Integer, Integer, Integer)]
+pitagoricas = [(a, b, c) | a <- [1..], b <-[1..], c <- [1..], a^2 + b^2 == c^2]
+--Explicar por qué esta definición no es útil. Dar una definición mejor.
+--No es util porque no corre, se cuelga
+--Yo calculo que porque usa 3 generadores infinitos y segun las reglas no se podia 
+--y chatgpt opina que "Un solo generador infinito por vez→ Si ponés más de uno, no termina nunca (infinito × infinito = muerte)."  (un capo)
+
+pit :: [(Integer, Integer, Integer)]
+pit = [(a,b,c) | c <- [1..], a <- [1..c], b <- [a..c], a^2 + b^2 == c^2]
+--si b va de 1..c tiene repetidos. qcyo asi anda
+%%%%%%%%%%%%%%%%%%
+--Escribir la función listasQueSuman :: Int -> [[Int]] que, dado un número natural n, devuelve todas las listas de enteros positivos (es decir, mayores o iguales que 1) cuya suma sea n. 
+--Para este ejercicio se permite usar recursión explícita. Pensar por qué la recursón utilizada no es estructural. (Este ejercicio no es de generación infinita, pero puede ser útil para otras funciones que generen listas infinitas de listas).
+
+listasQueSuman :: Int -> [[Int]]
+listasQueSuman 0 = [[]]
+listasQueSuman n = [ x:xs | x <- [1..n], xs <- listasQueSuman (n-x)]
+
+%%%%%%%
+--(A) Definir y dar el tipo de foldForm
+--(B) Definir fnn :: Form -> Bool -> Form usando foldForm. Que pasa una formula x a forma normal negada si el booleano es True y pasa a la negacion de x a forma normal negada si el booleano es False.
+--Ej:
+--fnn (And (Prop "x") Neg(Or (Prop "y") Neg(Prop "z"))) True = (And (Prop "x") (And Neg(Prop "y") (Prop "z")))
+--fnn (And (Prop "x") Neg(Or (Prop "y") Neg(Prop "z"))) False = (Or Neg(Prop "x") (Or (Prop "y") Neg(Prop "z"))) 
+
+
+data Form = Prop String
+            | And Form Form 
+            | Or Form Form 
+            | Neg Form deriving Show
+
+foldForm :: (String -> b) -> (b -> b -> b) -> (b -> b -> b) -> (b -> b) -> Form -> b
+foldForm fProp fAnd fOr fNeg f = case f of
+    Prop s  -> fProp s
+    And x y -> fAnd (rec x) (rec y)
+    Or x y  -> fOr (rec x) (rec y)
+    Neg x   -> fNeg (rec x)
+    where
+        rec = foldForm fProp fAnd fOr fNeg
+
+
+
+fnn :: Form -> Bool -> Form
+fnn = foldForm fProp fAnd fOr fNeg
+    where 
+        fProp = (\str bool   -> if bool then Prop str else Neg(Prop str))
+        fAnd  = (\rx ry bool -> if bool then And (rx True) (ry True) else Or (rx False) (ry False))
+        fOr   = (\rx ry bool -> if bool then Or (rx True) (ry True) else And (rx False) (ry False))
+        fNeg  = (\rx bool    -> if bool then rx False else rx True)
+
