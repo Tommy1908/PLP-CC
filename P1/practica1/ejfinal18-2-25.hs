@@ -1,3 +1,10 @@
+--(A) Definir y dar el tipo de foldForm
+--(B) Definir fnn :: Form -> Bool -> Form usando foldForm. Que pasa una formula x a forma normal negada si el booleano es True y pasa a la negacion de x a forma normal negada si el booleano es False.
+--Ej:
+--fnn (And (Prop "x") Neg(Or (Prop "y") Neg(Prop "z"))) True = (And (Prop "x") (And Neg(Prop "y") (Prop "z")))
+--fnn (And (Prop "x") Neg(Or (Prop "y") Neg(Prop "z"))) False = (Or Neg(Prop "x") (Or (Prop "y") Neg(Prop "z"))) 
+
+
 data Form = Prop String
             | And Form Form 
             | Or Form Form 
@@ -21,3 +28,4 @@ fnn = foldForm fProp fAnd fOr fNeg
         fAnd  = (\rx ry bool -> if bool then And (rx True) (ry True) else Or (rx False) (ry False))
         fOr   = (\rx ry bool -> if bool then Or (rx True) (ry True) else And (rx False) (ry False))
         fNeg  = (\rx bool    -> if bool then rx False else rx True)
+
